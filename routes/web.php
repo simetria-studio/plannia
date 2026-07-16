@@ -17,8 +17,9 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
-    // Alunos
+    // Alunos e Turmas
     Route::resource('students', StudentController::class)->except(['show']);
+    Route::resource('turmas', TurmaController::class)->except(['show']);
 
     // Upload e geração PEI/PAEE
     Route::get('/students/{student}/documents/create', [DocumentController::class, 'create'])->name('documents.create');
@@ -35,7 +36,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('direcao')->group(function () {
         Route::get('/school/edit', [SchoolController::class, 'edit'])->name('schools.edit');
         Route::put('/school', [SchoolController::class, 'update'])->name('schools.update');
-        Route::resource('turmas', TurmaController::class)->except(['show']);
         Route::resource('users', UserManagementController::class)->except(['show']);
     });
 

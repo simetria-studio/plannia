@@ -21,7 +21,7 @@
         <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
             <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Perfil</a>
             @if(Auth::user()->isDirecao())
-                <a href="{{ route('turmas.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Turmas</a>
+                <a href="{{ route('students.index', ['tab' => 'turmas']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Turmas</a>
                 <a href="{{ route('users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Usuários</a>
             @endif
             <form method="POST" action="{{ route('logout') }}">

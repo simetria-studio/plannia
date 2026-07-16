@@ -1,5 +1,11 @@
 <x-app-layout>
-    <x-page-header breadcrumb="Configurações › Turmas › Nova" title="Nova Turma" :back-url="route('turmas.index')" back-label="Voltar" />
+    <x-page-header
+        breadcrumb="Alunos e Turmas <span class='text-gray-400 mx-1'>›</span> Nova turma"
+        title="Nova Turma"
+        subtitle="Informe o nome e o turno da turma."
+        :back-url="route('students.index', ['tab' => 'turmas'])"
+        back-label="Voltar para Turmas"
+    />
 
     <div class="max-w-xl">
         <x-form-card title="Dados da Turma">
@@ -7,7 +13,7 @@
                 @csrf
                 <div>
                     <label class="plannia-label" for="name">Nome da turma <span class="text-red-500">*</span></label>
-                    <input id="name" name="name" type="text" class="plannia-input" value="{{ old('name') }}" required>
+                    <input id="name" name="name" type="text" class="plannia-input" placeholder="Ex: 3º Ano A" value="{{ old('name') }}" required>
                     <x-input-error :messages="$errors->get('name')" class="mt-1" />
                 </div>
                 <div>
@@ -20,7 +26,10 @@
                     </select>
                     <x-input-error :messages="$errors->get('turno')" class="mt-1" />
                 </div>
-                <div class="flex justify-end"><button type="submit" class="plannia-btn-primary">Salvar</button></div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <a href="{{ route('students.index', ['tab' => 'turmas']) }}" class="plannia-btn-ghost">Cancelar</a>
+                    <button type="submit" class="plannia-btn-primary">Salvar turma</button>
+                </div>
             </form>
         </x-form-card>
     </div>

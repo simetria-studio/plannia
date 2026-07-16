@@ -6,18 +6,34 @@ use App\Http\Requests\StoreStudentRequest;
 use App\Models\Student;
 use App\Models\Turma;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class StudentController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $students = Student::with('turma')
-            ->where('school_id', auth()->user()->school_id)
-            ->latest()
-            ->paginate(10);
+        $tab = $request->get('tab', 'alunos');
+        $schoolId = auth()->user()->school_id;
 
-        return view('students.index', compact('students'));
+        $students = Student::with('turma')
+            ->where('school_id', $schoolId)
+            ->latest()
+            ->paginate(10, ['*'], 'students_page')
+            ->withQueryString();
+
+        $turmas = Turma::withCount('students')
+            ->where('school_id', $schoolId)
+            ->orderBy('name')
+            ->paginate(10, ['*'], 'turmas_page')
+            ->withQueryString();
+
+        $counts = [
+            'alunos' => Student::where('school_id', $schoolId)->count(),
+            'turmas' => Turma::where('school_id', $schoolId)->count(),
+        ];
+
+        return view('students.index', compact('students', 'turmas', 'tab', 'counts'));
     }
 
     public function create(): View

@@ -8,7 +8,7 @@ class StoreTurmaRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->isDirecao() ?? false;
+        return $this->user() !== null;
     }
 
     public function rules(): array
