@@ -35,10 +35,28 @@
         <div class="space-y-6">
             <x-form-card title="1. Upload dos arquivos" :icon="'<svg class=\'h-5 w-5\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.75\' d=\'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12\'/></svg>'">
                 <div class="space-y-5">
-                    @foreach(['laudo_medico' => 'Laudo médico', 'avaliacao_neuropsicologica' => 'Avaliação neuropsicológica', 'relatorio_escolar' => 'Relatório escolar'] as $field => $label)
+                    @foreach([
+                        'laudo_medico' => ['label' => 'Laudo médico', 'required' => false],
+                        'avaliacao_neuropsicologica' => ['label' => 'Avaliação neuropsicológica', 'required' => true],
+                        'relatorio_escolar' => ['label' => 'Relatório escolar', 'required' => true],
+                    ] as $field => $meta)
                         <div>
-                            <label class="plannia-label" for="{{ $field }}">{{ $label }} <span class="text-red-500">*</span></label>
-                            <input id="{{ $field }}" name="{{ $field }}" type="file" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-plannia-blue hover:file:bg-blue-100 transition" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                            <label class="plannia-label" for="{{ $field }}">
+                                {{ $meta['label'] }}
+                                @if($meta['required'])
+                                    <span class="text-red-500">*</span>
+                                @else
+                                    <span class="text-gray-400 font-normal">(opcional)</span>
+                                @endif
+                            </label>
+                            <input
+                                id="{{ $field }}"
+                                name="{{ $field }}"
+                                type="file"
+                                class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-plannia-blue hover:file:bg-blue-100 transition"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                @if($meta['required']) required @endif
+                            >
                             <x-input-error :messages="$errors->get($field)" class="mt-1" />
                         </div>
                     @endforeach

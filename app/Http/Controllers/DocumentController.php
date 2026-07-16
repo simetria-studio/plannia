@@ -44,6 +44,10 @@ class DocumentController extends Controller
         $attachments = [];
 
         foreach ($attachmentTypes as $field => $type) {
+            if (! $request->hasFile($field)) {
+                continue;
+            }
+
             $file = $request->file($field);
             $path = $file->store("attachments/{$student->school_id}/{$student->id}", 'local');
 

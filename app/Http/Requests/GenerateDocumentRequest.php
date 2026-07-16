@@ -15,7 +15,7 @@ class GenerateDocumentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'laudo_medico' => ['required', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'],
+            'laudo_medico' => ['nullable', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'],
             'avaliacao_neuropsicologica' => ['required', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'],
             'relatorio_escolar' => ['required', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'],
             'document_types' => ['required', 'array', 'min:1'],
