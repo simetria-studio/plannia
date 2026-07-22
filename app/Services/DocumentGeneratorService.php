@@ -151,8 +151,16 @@ class DocumentGeneratorService
         $student = $content['student'];
         $sexo = strtoupper((string) ($ai['sexo'] ?? ''));
         $especialistas = implode(', ', $ai['especialistas'] ?? []) ?: 'Não informado';
+        $txt = fn (?string $value) => ($value !== null && trim($value) !== '') ? $value : 'Não informado nos documentos enviados.';
 
-        $section->addText('I – INFORMAÇÕES DO ALUNO', ['bold' => true, 'size' => 12]);
+        $d1 = $ai['dimensao_1'] ?? [];
+        $d2 = $ai['dimensao_2'] ?? [];
+        $d3 = $ai['dimensao_3'] ?? [];
+        $d4 = $ai['dimensao_4'] ?? [];
+        $d5 = $ai['dimensao_5'] ?? [];
+        $instrumentos = $d4['instrumentos'] ?? [];
+
+        $section->addText('INFORMAÇÕES DO ALUNO', ['bold' => true, 'size' => 12]);
         $section->addText('Nome completo do aluno: '.$student->full_name);
         $section->addText('Data de nascimento: '.($student->birth_date?->format('d/m/Y') ?? 'N/I'));
         $section->addText('Sexo: '.($sexo !== '' ? $sexo : 'N/I').' | Série: '.($ai['serie'] ?? $student->turma->name).' | Turno: '.($ai['turno'] ?? $student->turma->turno));
@@ -161,21 +169,107 @@ class DocumentGeneratorService
         if (! empty($ai['outros_especialistas'])) {
             $section->addText('Outros: '.$ai['outros_especialistas']);
         }
+        $section->addText('Data de início: '.($ai['data_inicio'] ?? 'N/I').' | Data de término: '.($ai['data_termino'] ?? 'N/I').' | Tempo previsto: '.($ai['tempo_previsto_bimestral'] ?? 'N/I'));
         $section->addTextBreak();
 
-        $section->addText('II – AÇÕES NECESSÁRIAS PARA IMPLEMENTAÇÃO DO PEI', ['bold' => true, 'size' => 12]);
-        $section->addText('Data de início: '.($ai['data_inicio'] ?? 'N/I').' | Data de término: '.($ai['data_termino'] ?? 'N/I').' | Tempo previsto bimestral: '.($ai['tempo_previsto_bimestral'] ?? 'N/I'));
+        $section->addText('1ª DIMENSÃO — QUEM É A CRIANÇA?', ['bold' => true, 'size' => 12]);
+        $section->addText('Objetivo: '.$txt($d1['objetivo'] ?? 'Conhecer a criança além do diagnóstico.'), ['italic' => true, 'size' => 9]);
+        $section->addText('Pergunta central: '.$txt($d1['pergunta_central'] ?? 'Quem é essa criança e quais fatores influenciam sua aprendizagem?'), ['italic' => true, 'size' => 9]);
+        $this->addWordSection($section, 'Identificação', $d1['identificacao'] ?? '');
+        $this->addWordSection($section, 'Histórico do desenvolvimento', $d1['historico_desenvolvimento'] ?? '');
+        $this->addWordSection($section, 'Diagnóstico e laudos', $d1['diagnostico_laudos'] ?? '');
+        $this->addWordSection($section, 'Rede de atendimento', $d1['rede_atendimento'] ?? '');
+        $this->addWordSection($section, 'Contexto familiar', $d1['contexto_familiar'] ?? '');
+        $this->addWordSection($section, 'Interesses e preferências', $d1['interesses_preferencias'] ?? '');
+        $this->addWordSection($section, 'Potencialidades', $d1['potencialidades'] ?? '');
+        $this->addWordSection($section, 'Desafios', $d1['desafios'] ?? '');
+        $this->addWordSection($section, 'Perfil sensorial', $d1['perfil_sensorial'] ?? '');
+        $this->addWordSection($section, 'Comunicação', $d1['comunicacao'] ?? '');
+        $this->addWordSection($section, 'Saúde', $d1['saude'] ?? '');
+        $this->addWordSection($section, 'Medicamentos', $d1['medicamentos'] ?? '');
+        $this->addWordSection($section, 'Rotina', $d1['rotina'] ?? '');
+
+        $section->addText('2ª DIMENSÃO — COMO ELA APRENDE?', ['bold' => true, 'size' => 12]);
+        $section->addText('Objetivo: '.$txt($d2['objetivo'] ?? 'Compreender a melhor forma de ensinar.'), ['italic' => true, 'size' => 9]);
+        $section->addText('Pergunta central: '.$txt($d2['pergunta_central'] ?? 'O que favorece e o que dificulta sua aprendizagem?'), ['italic' => true, 'size' => 9]);
+        $this->addWordSection($section, 'Estilo de aprendizagem', $d2['estilo_aprendizagem'] ?? '');
+        $this->addWordSection($section, 'Atenção', $d2['atencao'] ?? '');
+        $this->addWordSection($section, 'Motivação', $d2['motivacao'] ?? '');
+        $this->addWordSection($section, 'Comunicação', $d2['comunicacao'] ?? '');
+        $this->addWordSection($section, 'Linguagem', $d2['linguagem'] ?? '');
+        $this->addWordSection($section, 'Socialização', $d2['socializacao'] ?? '');
+        $this->addWordSection($section, 'Brincadeiras', $d2['brincadeiras'] ?? '');
+        $this->addWordSection($section, 'Cognição', $d2['cognicao'] ?? '');
+        $this->addWordSection($section, 'Funções executivas', $d2['funcoes_executivas'] ?? '');
+        $this->addWordSection($section, 'Motricidade', $d2['motricidade'] ?? '');
+        $this->addWordSection($section, 'Autonomia', $d2['autonomia'] ?? '');
+        $this->addWordSection($section, 'Barreiras para aprendizagem', $d2['barreiras_aprendizagem'] ?? '');
+        $this->addWordSection($section, 'Recursos que facilitam', $d2['recursos_facilitadores'] ?? '');
+
+        $section->addText('3ª DIMENSÃO — O QUE ELA PRECISA DESENVOLVER?', ['bold' => true, 'size' => 12]);
+        $section->addText('Objetivo: '.$txt($d3['objetivo'] ?? 'Definir metas claras.'), ['italic' => true, 'size' => 9]);
+        $section->addText('Pergunta central: '.$txt($d3['pergunta_central'] ?? 'Quais habilidades queremos desenvolver durante este período?'), ['italic' => true, 'size' => 9]);
         $section->addTextBreak();
 
-        $this->addWordSection($section, 'Processo de ensino e aprendizagem', $ai['processo_ensino_aprendizagem'] ?? '');
-        $this->addWordSection($section, 'Conteúdos, objetivos e habilidades', $ai['conteudos_objetivos_habilidades'] ?? '');
-        $this->addWordSection($section, 'Recursos de ensino-aprendizagem', $ai['recursos_ensino'] ?? '');
-        $this->addWordSection($section, 'Tecnologias, estratégias e adaptações', $ai['tecnologias_estrategias_adaptacoes'] ?? '');
-        $this->addWordSection($section, 'Espaços e profissionais envolvidos', $ai['espacos_profissionais'] ?? '');
-        $this->addWordSection($section, 'Critérios e instrumentos para avaliação', $ai['criterios_instrumentos_avaliacao'] ?? '');
-        $this->addWordSection($section, 'Mudanças para o próximo PEI', $ai['mudancas_proximo_pei'] ?? '');
+        $objetivos = $d3['objetivos'] ?? [];
+        if ($objetivos === []) {
+            $section->addText('Nenhum objetivo informado.');
+            $section->addTextBreak();
+        } else {
+            foreach ($objetivos as $index => $obj) {
+                $section->addText('Objetivo '.($index + 1).' — '.($obj['area'] ?? 'Área'), ['bold' => true, 'size' => 11]);
+                $section->addText('Habilidade atual: '.$txt($obj['habilidade_atual'] ?? null));
+                $section->addText('Habilidade esperada: '.$txt($obj['habilidade_esperada'] ?? null));
+                $section->addText('Prazo: '.$txt($obj['prazo'] ?? null));
+                $section->addText('Indicador de sucesso: '.$txt($obj['indicador_sucesso'] ?? null));
+                $section->addText('Forma de avaliação: '.$txt($obj['forma_avaliacao'] ?? null));
+                $section->addTextBreak();
+            }
+        }
 
-        $section->addText('III – LEITURA DO PEI PELOS PROFISSIONAIS E EQUIPE MULTIDISCIPLINAR', ['bold' => true, 'size' => 12]);
+        $section->addText('4ª DIMENSÃO — COMO ACOMPANHAR A EVOLUÇÃO?', ['bold' => true, 'size' => 12]);
+        $section->addText('Objetivo: '.$txt($d4['objetivo'] ?? 'Monitorar o progresso continuamente.'), ['italic' => true, 'size' => 9]);
+        $section->addText('Pergunta central: '.$txt($d4['pergunta_central'] ?? 'Como saberemos que a criança está evoluindo?'), ['italic' => true, 'size' => 9]);
+        $this->addWordSection($section, 'Checklists', $instrumentos['checklists'] ?? '');
+        $this->addWordSection($section, 'Rubricas', $instrumentos['rubricas'] ?? '');
+        $this->addWordSection($section, 'Registros fotográficos', $instrumentos['registros_fotograficos'] ?? '');
+        $this->addWordSection($section, 'Vídeos', $instrumentos['videos'] ?? '');
+        $this->addWordSection($section, 'Portfólio', $instrumentos['portfolio'] ?? '');
+        $this->addWordSection($section, 'Relatórios', $instrumentos['relatorios'] ?? '');
+        $this->addWordSection($section, 'Escalas de desenvolvimento', $instrumentos['escalas_desenvolvimento'] ?? '');
+        $this->addWordSection($section, 'Reuniões com a família', $instrumentos['reunioes_familia'] ?? '');
+        $this->addWordSection($section, 'Revisões do PEI', $instrumentos['revisoes_pei'] ?? '');
+        $this->addWordSection($section, 'O que evoluiu?', $d4['o_que_evoluiu'] ?? '');
+        $this->addWordSection($section, 'O que não evoluiu?', $d4['o_que_nao_evoluiu'] ?? '');
+        $this->addWordSection($section, 'Quais estratégias funcionaram?', $d4['estrategias_funcionaram'] ?? '');
+        $this->addWordSection($section, 'O que precisa ser modificado?', $d4['o_que_modificar'] ?? '');
+
+        $section->addText('5ª DIMENSÃO — COMO APLICAR? (PLANO DE INTERVENÇÃO PEDAGÓGICA)', ['bold' => true, 'size' => 12]);
+        $section->addText('Objetivo: '.$txt($d5['objetivo'] ?? 'Transformar cada objetivo em ações concretas.'), ['italic' => true, 'size' => 9]);
+        $section->addText('Pergunta central: '.$txt($d5['pergunta_central'] ?? 'Como aplicar o plano no dia a dia?'), ['italic' => true, 'size' => 9]);
+        $section->addTextBreak();
+
+        $planos = $d5['planos'] ?? [];
+        if ($planos === []) {
+            $section->addText('Nenhum plano de intervenção informado.');
+            $section->addTextBreak();
+        } else {
+            foreach ($planos as $index => $plano) {
+                $section->addText('Intervenção '.($index + 1).' — '.$txt($plano['objetivo'] ?? null), ['bold' => true, 'size' => 11]);
+                $section->addText('O que será ensinado: '.$txt($plano['o_que_sera_ensinado'] ?? null));
+                $section->addText('Como ensinar: '.$txt($plano['como_ensinar'] ?? null));
+                $section->addText('Em quais momentos: '.$txt($plano['em_quais_momentos'] ?? null));
+                $section->addText('Materiais: '.$txt($plano['materiais'] ?? null));
+                $section->addText('Adaptação: '.$txt($plano['adaptacao'] ?? null));
+                $section->addText('Papel do professor: '.$txt($plano['papel_professor'] ?? null));
+                $section->addText('Envolvimento da família: '.$txt($plano['envolvimento_familia'] ?? null));
+                $section->addText('Frequência: '.$txt($plano['frequencia'] ?? null).(! empty($plano['tempo']) ? ' | Tempo: '.$plano['tempo'] : ''));
+                $section->addText('Avaliação: '.$txt($plano['avaliacao'] ?? null));
+                $section->addTextBreak();
+            }
+        }
+
+        $section->addText('LEITURA DO PEI PELOS PROFISSIONAIS E EQUIPE MULTIDISCIPLINAR', ['bold' => true, 'size' => 12]);
         $this->addWordSection($section, 'Direção/Coordenação escolar', $ai['obs_direcao'] ?? '');
         $this->addWordSection($section, 'Familiares e/ou responsáveis', $ai['obs_familiares'] ?? '');
         $this->addWordSection($section, 'Equipe multidisciplinar', $ai['obs_equipe_multidisciplinar'] ?? '');

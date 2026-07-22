@@ -172,6 +172,7 @@ Responda APENAS com JSON válido, sem markdown.
 PRIORIZE os dados dos DOCUMENTOS ENVIADOS sobre o cadastro do sistema quando houver conflito (nome, CID, diagnóstico, especialistas, recomendações).
 Preencha especialistas com base no que aparece nos laudos/relatórios.
 Use diagnósticos e CIDs reais dos documentos.
+Para PEI: estruture o plano nas 5 dimensões obrigatórias (Quem é a criança; Como ela aprende; O que precisa desenvolver; Como acompanhar; Como aplicar). Preencha cada campo com base nas evidências; para a 3ª dimensão gere objetivos por área com habilidade atual/esperada, prazo, indicador e forma de avaliação; para a 5ª dimensão transforme cada objetivo em plano de intervenção concreto (estratégia, materiais, momentos, adaptação, papel do professor, família, frequência).
 Para PAEE (checklist de habilidades): marque cada habilidade com o nível mais coerente com as evidências dos documentos.
 Se a evidência for insuficiente para uma habilidade, use "nao_observado".
 Se a habilidade estiver acima da faixa etária / não aplicável, use "nao_observado".
@@ -353,13 +354,92 @@ PROMPT;
   "data_inicio": "dd/mm/aaaa (data de início sugerida do PEI)",
   "data_termino": "dd/mm/aaaa (data de término sugerida)",
   "tempo_previsto_bimestral": "ex: 2 bimestres",
-  "processo_ensino_aprendizagem": "texto corrido com habilidades gerais e expectativas de aprendizagem individuais baseadas nos documentos",
-  "conteudos_objetivos_habilidades": "o que o aluno poderá aprender neste período e atividades possíveis, baseado nos documentos",
-  "recursos_ensino": "recursos a serem utilizados no processo de ensino-aprendizagem",
-  "tecnologias_estrategias_adaptacoes": "tecnologias de apoio, estratégias pedagógicas e adaptações (inclua orientações do laudo à escola)",
-  "espacos_profissionais": "espaços e profissionais envolvidos na aplicação do PEI",
-  "criterios_instrumentos_avaliacao": "critérios e instrumentos para avaliação deste PEI",
-  "mudancas_proximo_pei": "mudanças a serem consideradas para elaboração do próximo PEI",
+  "dimensao_1": {
+    "objetivo": "Conhecer a criança além do diagnóstico.",
+    "pergunta_central": "Quem é essa criança e quais fatores influenciam sua aprendizagem?",
+    "identificacao": "dados de identificação e perfil geral da criança",
+    "historico_desenvolvimento": "marcos e histórico do desenvolvimento",
+    "diagnostico_laudos": "síntese do diagnóstico e laudos (CID, nível de suporte, etc.)",
+    "rede_atendimento": "rede de atendimento (escola, terapeutas, serviços)",
+    "contexto_familiar": "contexto familiar e rede de apoio",
+    "interesses_preferencias": "interesses, preferências e motivadores",
+    "potencialidades": "potencialidades e pontos fortes",
+    "desafios": "desafios e necessidades de apoio",
+    "perfil_sensorial": "perfil sensorial (hipo/hipersensibilidades, autorregulação)",
+    "comunicacao": "formas de comunicação utilizadas",
+    "saude": "aspectos de saúde relevantes para a escola",
+    "medicamentos": "medicamentos em uso, se houver",
+    "rotina": "rotina diária e escolar"
+  },
+  "dimensao_2": {
+    "objetivo": "Compreender a melhor forma de ensinar.",
+    "pergunta_central": "O que favorece e o que dificulta sua aprendizagem?",
+    "estilo_aprendizagem": "estilo de aprendizagem preferencial",
+    "atencao": "atenção e engajamento",
+    "motivacao": "fatores motivacionais",
+    "comunicacao": "comunicação no contexto de aprendizagem",
+    "linguagem": "linguagem receptiva/expressiva",
+    "socializacao": "interação social e pares",
+    "brincadeiras": "brincadeiras e engajamento lúdico",
+    "cognicao": "aspectos cognitivos relevantes",
+    "funcoes_executivas": "funções executivas (planejamento, inibição, flexibilidade)",
+    "motricidade": "motricidade grossa e fina no contexto escolar",
+    "autonomia": "autonomia e independência",
+    "barreiras_aprendizagem": "barreiras que dificultam a aprendizagem",
+    "recursos_facilitadores": "recursos e estratégias que facilitam a aprendizagem"
+  },
+  "dimensao_3": {
+    "objetivo": "Definir metas claras por área de desenvolvimento.",
+    "pergunta_central": "Quais habilidades queremos desenvolver durante este período?",
+    "objetivos": [
+      {
+        "area": "uma de: Desenvolvimento Cognitivo | Linguagem | Comunicação | Motricidade Grossa | Motricidade Fina | Autonomia | Socialização | Regulação Emocional | Campos de Experiência da BNCC",
+        "habilidade_atual": "o que a criança já realiza",
+        "habilidade_esperada": "meta a desenvolver no período",
+        "prazo": "ex: 1 bimestre / 2 meses",
+        "indicador_sucesso": "como evidenciar o avanço",
+        "forma_avaliacao": "como será avaliado (observação, checklist, etc.)"
+      }
+    ]
+  },
+  "dimensao_4": {
+    "objetivo": "Monitorar o progresso continuamente.",
+    "pergunta_central": "Como saberemos que a criança está evoluindo?",
+    "instrumentos": {
+      "checklists": "como e quando usar checklists",
+      "rubricas": "rubricas de avaliação, se aplicável",
+      "registros_fotograficos": "uso de registros fotográficos",
+      "videos": "uso de vídeos para acompanhamento",
+      "portfolio": "organização do portfólio",
+      "relatorios": "relatórios periódicos",
+      "escalas_desenvolvimento": "escalas de desenvolvimento utilizadas",
+      "reunioes_familia": "frequência e foco das reuniões com a família",
+      "revisoes_pei": "quando e como o PEI será revisado"
+    },
+    "o_que_evoluiu": "registrar o que evoluiu (preencher com base nos documentos ou deixar orientação para acompanhamento)",
+    "o_que_nao_evoluiu": "registrar o que ainda não evoluiu",
+    "estrategias_funcionaram": "estratégias que funcionaram",
+    "o_que_modificar": "o que precisa ser modificado no plano"
+  },
+  "dimensao_5": {
+    "objetivo": "Transformar cada objetivo em ações concretas (Plano de Intervenção Pedagógica).",
+    "pergunta_central": "Como aplicar o plano no dia a dia?",
+    "planos": [
+      {
+        "objetivo": "objetivo vinculado à dimensão 3 (ex: Esperar a vez durante jogos)",
+        "o_que_sera_ensinado": "habilidade concreta a ensinar",
+        "como_ensinar": "estratégias (modelagem, demonstração, pares, histórias sociais, rotina visual, reforço positivo, etc.)",
+        "em_quais_momentos": "momentos da rotina (roda, parque, alimentação, artes, etc.)",
+        "materiais": "materiais e recursos",
+        "adaptacao": "adaptações necessárias",
+        "papel_professor": "papel do professor/mediador",
+        "envolvimento_familia": "como a família participa",
+        "frequencia": "frequência da intervenção",
+        "tempo": "duração típica da atividade",
+        "avaliacao": "como avaliar o progresso desta intervenção"
+      }
+    ]
+  },
   "obs_direcao": "",
   "obs_familiares": "",
   "obs_equipe_multidisciplinar": ""
@@ -424,6 +504,7 @@ JSON;
 
         if ($type === DocumentType::Pei) {
             $student->loadMissing('turma');
+            $naoInformado = 'Não informado nos documentos enviados.';
 
             return [
                 'titulo' => 'PLANEJAMENTO EDUCACIONAL INDIVIDUALIZADO (PEI)',
@@ -437,13 +518,100 @@ JSON;
                 'data_inicio' => now()->format('d/m/Y'),
                 'data_termino' => now()->addMonths(4)->format('d/m/Y'),
                 'tempo_previsto_bimestral' => '2 bimestres',
-                'processo_ensino_aprendizagem' => $excerpt !== '' ? $excerpt : $student->observations,
-                'conteudos_objetivos_habilidades' => 'Definir conteúdos e objetivos a partir das necessidades identificadas nos documentos enviados.',
-                'recursos_ensino' => 'Recursos visuais, materiais adaptados e mediação individualizada.',
-                'tecnologias_estrategias_adaptacoes' => "Pictogramas e cartões visuais\nQuadros de rotina visual\nAdaptação de conteúdos com imagens e jogos educativos",
-                'espacos_profissionais' => 'Salas de aula, áreas externas da escola e ambiente familiar. Profissionais: equipe pedagógica, familiares e terapeutas.',
-                'criterios_instrumentos_avaliacao' => 'Relatórios de progresso, observação em sala, feedback dos responsáveis e reuniões de acompanhamento.',
-                'mudancas_proximo_pei' => 'Revisão das metas e objetivos, integração de novas estratégias, colaboração multidisciplinar e participação dos responsáveis.',
+                'dimensao_1' => [
+                    'objetivo' => 'Conhecer a criança além do diagnóstico.',
+                    'pergunta_central' => 'Quem é essa criança e quais fatores influenciam sua aprendizagem?',
+                    'identificacao' => $student->full_name.' — '.$student->turma->name,
+                    'historico_desenvolvimento' => $excerpt !== '' ? mb_substr($excerpt, 0, 500) : $naoInformado,
+                    'diagnostico_laudos' => $student->cid ?: $naoInformado,
+                    'rede_atendimento' => $naoInformado,
+                    'contexto_familiar' => 'Responsável: '.$student->legal_guardian,
+                    'interesses_preferencias' => $naoInformado,
+                    'potencialidades' => $naoInformado,
+                    'desafios' => $student->observations ?: $naoInformado,
+                    'perfil_sensorial' => $naoInformado,
+                    'comunicacao' => $naoInformado,
+                    'saude' => $naoInformado,
+                    'medicamentos' => $naoInformado,
+                    'rotina' => $naoInformado,
+                ],
+                'dimensao_2' => [
+                    'objetivo' => 'Compreender a melhor forma de ensinar.',
+                    'pergunta_central' => 'O que favorece e o que dificulta sua aprendizagem?',
+                    'estilo_aprendizagem' => $naoInformado,
+                    'atencao' => $naoInformado,
+                    'motivacao' => $naoInformado,
+                    'comunicacao' => $naoInformado,
+                    'linguagem' => $naoInformado,
+                    'socializacao' => $naoInformado,
+                    'brincadeiras' => $naoInformado,
+                    'cognicao' => $naoInformado,
+                    'funcoes_executivas' => $naoInformado,
+                    'motricidade' => $naoInformado,
+                    'autonomia' => $naoInformado,
+                    'barreiras_aprendizagem' => $naoInformado,
+                    'recursos_facilitadores' => 'Recursos visuais, materiais adaptados e mediação individualizada.',
+                ],
+                'dimensao_3' => [
+                    'objetivo' => 'Definir metas claras por área de desenvolvimento.',
+                    'pergunta_central' => 'Quais habilidades queremos desenvolver durante este período?',
+                    'objetivos' => [
+                        [
+                            'area' => 'Autonomia',
+                            'habilidade_atual' => $naoInformado,
+                            'habilidade_esperada' => 'Definir meta a partir das necessidades identificadas nos documentos.',
+                            'prazo' => '2 bimestres',
+                            'indicador_sucesso' => 'Observação registrada em checklist de acompanhamento.',
+                            'forma_avaliacao' => 'Observação em sala e registro periódico.',
+                        ],
+                        [
+                            'area' => 'Socialização',
+                            'habilidade_atual' => $naoInformado,
+                            'habilidade_esperada' => 'Ampliar participação em interações com pares.',
+                            'prazo' => '2 bimestres',
+                            'indicador_sucesso' => 'Participação observada em atividades em grupo.',
+                            'forma_avaliacao' => 'Registro anecdótico e feedback da família.',
+                        ],
+                    ],
+                ],
+                'dimensao_4' => [
+                    'objetivo' => 'Monitorar o progresso continuamente.',
+                    'pergunta_central' => 'Como saberemos que a criança está evoluindo?',
+                    'instrumentos' => [
+                        'checklists' => 'Checklist semanal das metas prioritárias.',
+                        'rubricas' => $naoInformado,
+                        'registros_fotograficos' => 'Com autorização da família, quando pertinente.',
+                        'videos' => $naoInformado,
+                        'portfolio' => 'Portfólio com evidências das atividades.',
+                        'relatorios' => 'Relatórios bimestrais de progresso.',
+                        'escalas_desenvolvimento' => $naoInformado,
+                        'reunioes_familia' => 'Reuniões periódicas com a família.',
+                        'revisoes_pei' => 'Revisão ao final do período previsto.',
+                    ],
+                    'o_que_evoluiu' => 'A preencher ao longo do acompanhamento.',
+                    'o_que_nao_evoluiu' => 'A preencher ao longo do acompanhamento.',
+                    'estrategias_funcionaram' => 'A preencher ao longo do acompanhamento.',
+                    'o_que_modificar' => 'Revisar metas e estratégias conforme evidências.',
+                ],
+                'dimensao_5' => [
+                    'objetivo' => 'Transformar cada objetivo em ações concretas (Plano de Intervenção Pedagógica).',
+                    'pergunta_central' => 'Como aplicar o plano no dia a dia?',
+                    'planos' => [
+                        [
+                            'objetivo' => 'Ampliar autonomia e participação social.',
+                            'o_que_sera_ensinado' => 'Habilidades prioritárias identificadas nos documentos.',
+                            'como_ensinar' => 'Modelagem, demonstração, rotina visual e reforço positivo.',
+                            'em_quais_momentos' => 'Roda de conversa, atividades livres e momentos de rotina.',
+                            'materiais' => 'Cartões visuais, materiais sensoriais e jogos.',
+                            'adaptacao' => 'Instruções em etapas e mais tempo para resposta.',
+                            'papel_professor' => 'Mediar, modelar, incentivar e registrar observações.',
+                            'envolvimento_familia' => 'Repetir a habilidade em casa e manter comunicação constante.',
+                            'frequencia' => 'Diariamente',
+                            'tempo' => '15 a 20 minutos',
+                            'avaliacao' => 'Registrar avanços em checklist e reuniões de acompanhamento.',
+                        ],
+                    ],
+                ],
                 'obs_direcao' => '',
                 'obs_familiares' => '',
                 'obs_equipe_multidisciplinar' => '',
