@@ -66,21 +66,37 @@ class DocumentController extends Controller
         $format = $request->format === 'word' ? 'word' : 'pdf';
         $generated = [];
         $usedAi = (bool) config('services.openai.api_key');
+        $types = $request->document_types;
+        $combineBoth = $request->input('combine_mode') === 'combined'
+            && in_array('pei', $types, true)
+            && in_array('paee', $types, true);
 
-        foreach ($request->document_types as $docType) {
-            $generated[] = $this->generator->generate(
+        if ($combineBoth) {
+            $generated[] = $this->generator->generateCombined(
                 $student,
-                DocumentType::from($docType),
                 $format,
                 $request->user(),
                 $attachments
             );
+        } else {
+            foreach ($types as $docType) {
+                $generated[] = $this->generator->generate(
+                    $student,
+                    DocumentType::from($docType),
+                    $format,
+                    $request->user(),
+                    $attachments
+                );
+            }
         }
 
         $message = count($generated) > 1
             ? 'Documentos gerados com sucesso!'
             : 'Documento gerado com sucesso!';
 
+        if ($combineBoth) {
+            $message = 'PEI e PAEE gerados no mesmo arquivo com sucesso!';
+        }
         $message .= $usedAi
             ? ' A IA extraiu dados dos uploads e montou o conteúdo.'
             : ' Conteúdo montado em modo parcial (configure OPENAI_API_KEY para IA completa).';

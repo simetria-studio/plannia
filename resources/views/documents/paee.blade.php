@@ -6,7 +6,10 @@
         @page { margin: 22px 26px; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 9.5px; color: #111; line-height: 1.35; }
         .school { text-align: center; font-size: 12px; font-weight: bold; text-transform: uppercase; }
-        .logo { max-height: 55px; display: block; margin: 0 auto 4px; }
+        .logo-wrap { text-align: center; margin: 0 0 4px; }
+        .logo { width: 80px; height: 80px; }
+        .school-meta { text-align: center; font-size: 8.5px; color: #444; margin: 2px 0 6px; line-height: 1.4; }
+        .school-meta span { display: inline-block; margin: 0 5px; }
         .doc-title { text-align: center; font-size: 12px; font-weight: bold; margin: 8px 0 10px; text-transform: uppercase; }
         .section-title { font-size: 10px; font-weight: bold; margin: 10px 0 6px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 2px; }
         .label { font-weight: bold; }
@@ -52,11 +55,9 @@
     };
 @endphp
 
-@if($school->logo_path && file_exists(storage_path('app/public/' . $school->logo_path)))
-    <img src="{{ storage_path('app/public/' . $school->logo_path) }}" class="logo">
-@endif
-<div class="school">{{ $school->name }}</div>
-<div class="doc-title">{{ $ai['titulo'] ?? 'PAEE (PLANO DE ATENDIMENTO EDUCACIONAL ESPECIALIZADO)' }}</div>
+@include('documents.partials.school-header', [
+    'headerTitle' => $ai['titulo'] ?? 'PAEE (PLANO DE ATENDIMENTO EDUCACIONAL ESPECIALIZADO)',
+])
 
 <div class="section-title">I – Informações do aluno</div>
 <table class="info">

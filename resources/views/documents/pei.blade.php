@@ -5,8 +5,11 @@
     <style>
         @page { margin: 24px 28px; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 10.5px; color: #111; line-height: 1.4; }
-        .school { text-align: center; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
-        .logo { max-height: 55px; display: block; margin: 0 auto 6px; }
+        .school { text-align: center; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
+        .logo-wrap { text-align: center; margin: 0 0 6px; }
+        .logo { width: 90px; height: 90px; }
+        .school-meta { text-align: center; font-size: 9px; color: #444; margin: 2px 0 8px; line-height: 1.45; }
+        .school-meta span { display: inline-block; margin: 0 6px; }
         .doc-title { text-align: center; font-size: 12px; font-weight: bold; margin: 8px 0 12px; text-transform: uppercase; letter-spacing: 0.3px; }
         .section-title { font-size: 11px; font-weight: bold; margin: 14px 0 6px; text-transform: uppercase; border-bottom: 1.5px solid #1e3a5f; padding-bottom: 3px; color: #1e3a5f; }
         .dim-title { font-size: 11px; font-weight: bold; margin: 12px 0 4px; background: #eef2f7; padding: 5px 7px; border-left: 3px solid #1e3a5f; }
@@ -98,11 +101,9 @@
     ];
 @endphp
 
-@if($school->logo_path && file_exists(storage_path('app/public/' . $school->logo_path)))
-    <img src="{{ storage_path('app/public/' . $school->logo_path) }}" class="logo">
-@endif
-<div class="school">{{ $school->name }}</div>
-<div class="doc-title">{{ $ai['titulo'] ?? 'PLANEJAMENTO EDUCACIONAL INDIVIDUALIZADO (PEI)' }}</div>
+@include('documents.partials.school-header', [
+    'headerTitle' => $ai['titulo'] ?? 'PLANEJAMENTO EDUCACIONAL INDIVIDUALIZADO (PEI)',
+])
 
 {{-- Cabeçalho --}}
 <div class="section-title">Informações do aluno</div>

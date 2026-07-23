@@ -17,6 +17,8 @@ class StoreSchoolRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
             'cnpj' => ['nullable', 'string', 'max:18'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'inep' => ['nullable', 'string', 'max:20'],
             'logo' => ['nullable', 'image', 'max:2048'],
         ];
     }
@@ -27,6 +29,8 @@ class StoreSchoolRequest extends FormRequest
             'name' => 'nome da escola',
             'address' => 'endereço',
             'cnpj' => 'CNPJ',
+            'phone' => 'telefone',
+            'inep' => 'código INEP',
             'logo' => 'logo',
         ];
     }

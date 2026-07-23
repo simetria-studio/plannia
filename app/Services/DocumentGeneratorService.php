@@ -31,6 +31,10 @@ class DocumentGeneratorService
         User $creator,
         array $attachments = []
     ): GeneratedDocument {
+        if ($type === DocumentType::PeiPaee) {
+            return $this->generateCombined($student, $format, $creator, $attachments);
+        }
+
         $student->loadMissing(['school', 'turma']);
 
         $aiResult = $this->aiService->generateDocumentContent($student, $type, $attachments);
@@ -39,6 +43,73 @@ class DocumentGeneratorService
 
         $content = $this->buildContent($student, $student->school, $type, $aiContent);
 
+        return $this->persistDocument($student, $type, $format, $creator, $content, $aiContent, $sources);
+    }
+
+    /**
+     * Gera PEI e PAEE em um único arquivo.
+     *
+     * @param  array<int, array{type: string, path: string, original_name: string}>  $attachments
+     */
+    public function generateCombined(
+        Student $student,
+        string $format,
+        User $creator,
+        array $attachments = []
+    ): GeneratedDocument {
+        $student->loadMissing(['school', 'turma']);
+
+        $batch = $this->aiService->generateContentsForTypes(
+            $student,
+            [DocumentType::Pei, DocumentType::Paee],
+            $attachments
+        );
+
+        $peiAi = $batch['contents'][DocumentType::Pei->value];
+        $paeeAi = $batch['contents'][DocumentType::Paee->value];
+        $sources = $batch['sources'];
+
+        $aiContent = [
+            'titulo' => 'PEI + PAEE',
+            'pei' => $peiAi,
+            'paee' => $paeeAi,
+        ];
+
+        $content = [
+            'school' => $student->school,
+            'student' => $student,
+            'type' => DocumentType::PeiPaee,
+            'ai' => $aiContent,
+            'pei_ai' => $peiAi,
+            'paee_ai' => $paeeAi,
+            'generated_at' => now()->format('d/m/Y H:i'),
+        ];
+
+        return $this->persistDocument(
+            $student,
+            DocumentType::PeiPaee,
+            $format,
+            $creator,
+            $content,
+            $aiContent,
+            $sources
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     * @param  array<string, mixed>  $aiContent
+     * @param  array<string, string>  $sources
+     */
+    private function persistDocument(
+        Student $student,
+        DocumentType $type,
+        string $format,
+        User $creator,
+        array $content,
+        array $aiContent,
+        array $sources
+    ): GeneratedDocument {
         $filename = sprintf(
             '%s_%s_%s.%s',
             $type->value,
@@ -95,6 +166,12 @@ class DocumentGeneratorService
      */
     private function generatePdf(array $content, string $path): void
     {
+        if ($content['type'] === DocumentType::PeiPaee) {
+            $this->generateCombinedPdf($content, $path);
+
+            return;
+        }
+
         $view = $content['type'] === DocumentType::Paee
             ? 'documents.paee'
             : 'documents.pei';
@@ -106,31 +183,99 @@ class DocumentGeneratorService
     /**
      * @param  array<string, mixed>  $content
      */
+    private function generateCombinedPdf(array $content, string $path): void
+    {
+        $peiHtml = view('documents.pei', [
+            'school' => $content['school'],
+            'student' => $content['student'],
+            'type' => DocumentType::Pei,
+            'ai' => $content['pei_ai'],
+            'generated_at' => $content['generated_at'],
+        ])->render();
+
+        $paeeHtml = view('documents.paee', [
+            'school' => $content['school'],
+            'student' => $content['student'],
+            'type' => DocumentType::Paee,
+            'ai' => $content['paee_ai'],
+            'generated_at' => $content['generated_at'],
+        ])->render();
+
+        $styles = $this->extractHtmlInner($peiHtml, 'style')."\n".$this->extractHtmlInner($paeeHtml, 'style');
+        $peiBody = $this->extractHtmlInner($peiHtml, 'body');
+        $paeeBody = $this->extractHtmlInner($paeeHtml, 'body');
+
+        $html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        {$styles}
+        .combined-break { page-break-after: always; }
+    </style>
+</head>
+<body>
+{$peiBody}
+<div class="combined-break"></div>
+{$paeeBody}
+</body>
+</html>
+HTML;
+
+        $pdf = Pdf::loadHTML($html)->setPaper('a4');
+        Storage::disk('local')->put($path, $pdf->output());
+    }
+
+    private function extractHtmlInner(string $html, string $tag): string
+    {
+        if (preg_match('/<'.$tag.'[^>]*>(.*)<\/'.$tag.'>/is', $html, $matches)) {
+            return trim($matches[1]);
+        }
+
+        return '';
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     */
     private function generateWord(array $content, string $path): void
     {
         $phpWord = new PhpWord;
         $section = $phpWord->addSection();
-        $ai = $content['ai'];
-        $student = $content['student'];
         $type = $content['type'];
 
-        if ($content['school']->logo_path && Storage::disk('public')->exists($content['school']->logo_path)) {
-            $section->addImage(Storage::disk('public')->path($content['school']->logo_path), [
-                'width' => 80,
-                'height' => 80,
-                'alignment' => Jc::CENTER,
-            ]);
-        }
+        $this->addWordSchoolHeader($section, $content['school']);
 
-        $section->addText($content['school']->name, ['bold' => true, 'size' => 16], ['alignment' => Jc::CENTER]);
-        $section->addTextBreak();
-        $section->addText($ai['titulo'] ?? ($type === DocumentType::Pei ? 'PLANEJAMENTO EDUCACIONAL INDIVIDUALIZADO (PEI)' : $type->label()), ['bold' => true, 'size' => 14], ['alignment' => Jc::CENTER]);
-        $section->addTextBreak();
+        if ($type === DocumentType::PeiPaee) {
+            $section->addText('PEI + PAEE', ['bold' => true, 'size' => 14], ['alignment' => Jc::CENTER]);
+            $section->addTextBreak();
 
-        if ($type === DocumentType::Pei) {
-            $this->addWordPei($section, $content);
+            $peiContent = $content;
+            $peiContent['ai'] = $content['pei_ai'];
+            $peiContent['type'] = DocumentType::Pei;
+            $section->addText($content['pei_ai']['titulo'] ?? 'PLANEJAMENTO EDUCACIONAL INDIVIDUALIZADO (PEI)', ['bold' => true, 'size' => 13], ['alignment' => Jc::CENTER]);
+            $section->addTextBreak();
+            $this->addWordPei($section, $peiContent);
+
+            $section->addPageBreak();
+
+            $paeeContent = $content;
+            $paeeContent['ai'] = $content['paee_ai'];
+            $paeeContent['type'] = DocumentType::Paee;
+            $section->addText($content['paee_ai']['titulo'] ?? 'PAEE (PLANO DE ATENDIMENTO EDUCACIONAL ESPECIALIZADO)', ['bold' => true, 'size' => 13], ['alignment' => Jc::CENTER]);
+            $section->addTextBreak();
+            $this->addWordPaee($section, $paeeContent);
         } else {
-            $this->addWordPaee($section, $content);
+            $ai = $content['ai'];
+            $section->addText($ai['titulo'] ?? ($type === DocumentType::Pei ? 'PLANEJAMENTO EDUCACIONAL INDIVIDUALIZADO (PEI)' : $type->label()), ['bold' => true, 'size' => 14], ['alignment' => Jc::CENTER]);
+            $section->addTextBreak();
+
+            if ($type === DocumentType::Pei) {
+                $this->addWordPei($section, $content);
+            } else {
+                $this->addWordPaee($section, $content);
+            }
         }
 
         $section->addTextBreak();
@@ -140,6 +285,37 @@ class DocumentGeneratorService
         IOFactory::createWriter($phpWord, 'Word2007')->save($tempPath);
         Storage::disk('local')->put($path, file_get_contents($tempPath));
         @unlink($tempPath);
+    }
+
+    private function addWordSchoolHeader(mixed $section, School $school): void
+    {
+        $logoPath = $school->logoAbsolutePath();
+
+        if ($logoPath) {
+            $section->addImage($logoPath, [
+                'width' => 80,
+                'height' => 80,
+                'alignment' => Jc::CENTER,
+            ]);
+        }
+
+        $section->addText($school->name, ['bold' => true, 'size' => 16], ['alignment' => Jc::CENTER]);
+
+        $meta = array_filter([
+            $school->cnpj ? 'CNPJ: '.$school->cnpj : null,
+            $school->inep ? 'INEP: '.$school->inep : null,
+            $school->phone ? 'Tel.: '.$school->phone : null,
+        ]);
+
+        if ($meta !== []) {
+            $section->addText(implode('  |  ', $meta), ['size' => 9], ['alignment' => Jc::CENTER]);
+        }
+
+        if ($school->address) {
+            $section->addText($school->address, ['size' => 9], ['alignment' => Jc::CENTER]);
+        }
+
+        $section->addTextBreak();
     }
 
     /**

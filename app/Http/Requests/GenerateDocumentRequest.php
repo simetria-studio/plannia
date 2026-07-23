@@ -20,6 +20,7 @@ class GenerateDocumentRequest extends FormRequest
             'relatorio_escolar' => ['required', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'],
             'document_types' => ['required', 'array', 'min:1'],
             'document_types.*' => ['required', Rule::in(['pei', 'paee'])],
+            'combine_mode' => ['nullable', Rule::in(['separate', 'combined'])],
             'format' => ['required', Rule::in(['pdf', 'word'])],
         ];
     }
@@ -31,6 +32,7 @@ class GenerateDocumentRequest extends FormRequest
             'avaliacao_neuropsicologica' => 'avaliação neuropsicológica',
             'relatorio_escolar' => 'relatório escolar',
             'document_types' => 'tipo de documento',
+            'combine_mode' => 'modo de geração',
             'format' => 'formato',
         ];
     }

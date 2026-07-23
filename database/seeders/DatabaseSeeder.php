@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Escola Municipal Exemplo',
             'address' => 'Rua das Flores, 123 — Centro',
             'cnpj' => '00.000.000/0001-00',
+            'phone' => '(11) 3000-0000',
+            'inep' => '12345678',
         ]);
 
         Turma::create(['school_id' => $school->id, 'name' => '3º Ano A', 'turno' => 'Manhã']);

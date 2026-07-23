@@ -21,41 +21,73 @@ class DocumentAiService
      */
     public function generateDocumentContent(Student $student, DocumentType $type, array $attachments): array
     {
+        if ($type === DocumentType::PeiPaee) {
+            throw new RuntimeException('Use generateCombinedContents para PEI+PAEE.');
+        }
+
+        $batch = $this->generateContentsForTypes($student, [$type], $attachments);
+
+        return [
+            'content' => $batch['contents'][$type->value],
+            'sources' => $batch['sources'],
+        ];
+    }
+
+    /**
+     * Gera PEI e/ou PAEE reutilizando o mesmo OCR dos anexos.
+     *
+     * @param  array<int, DocumentType>  $types
+     * @param  array<int, array{type: string, path: string, original_name: string}>  $attachments
+     * @return array{contents: array<string, array<string, mixed>>, sources: array<string, string>}
+     */
+    public function generateContentsForTypes(Student $student, array $types, array $attachments): array
+    {
         $prepared = $this->extractor->prepareAttachments($attachments);
+        $contents = [];
 
         if (! config('services.openai.api_key')) {
             $sources = $this->sourcesPreview($prepared);
 
-            return [
-                'content' => $this->fallbackContent($student, $type, $sources, 'Chave OPENAI_API_KEY não configurada no .env.'),
-                'sources' => $sources,
-            ];
+            foreach ($types as $type) {
+                $contents[$type->value] = $this->fallbackContent(
+                    $student,
+                    $type,
+                    $sources,
+                    'Chave OPENAI_API_KEY não configurada no .env.'
+                );
+            }
+
+            return ['contents' => $contents, 'sources' => $sources];
         }
 
         try {
-            // 1) OCR / leitura dos documentos (principalmente imagens)
             $extractedTexts = $this->extractTextsWithAi($prepared);
+            $sources = $this->sanitizeSourcesForStorage($extractedTexts);
 
-            // 2) Geração do PEI/PAEE com o texto já extraído
-            $content = $this->callOpenAiForDocument($student, $type, $extractedTexts);
+            foreach ($types as $type) {
+                $contents[$type->value] = $this->callOpenAiForDocument($student, $type, $extractedTexts);
+            }
 
-            return [
-                'content' => $content,
-                'sources' => $this->sanitizeSourcesForStorage($extractedTexts),
-            ];
+            return ['contents' => $contents, 'sources' => $sources];
         } catch (\Throwable $e) {
             Log::error('Falha na geração IA do documento', [
                 'student_id' => $student->id,
-                'type' => $type->value,
+                'types' => array_map(fn (DocumentType $t) => $t->value, $types),
                 'error' => $e->getMessage(),
             ]);
 
             $sources = $this->sourcesPreview($prepared);
 
-            return [
-                'content' => $this->fallbackContent($student, $type, $sources, 'Falha na chamada à IA: '.$e->getMessage()),
-                'sources' => $sources,
-            ];
+            foreach ($types as $type) {
+                $contents[$type->value] = $this->fallbackContent(
+                    $student,
+                    $type,
+                    $sources,
+                    'Falha na chamada à IA: '.$e->getMessage()
+                );
+            }
+
+            return ['contents' => $contents, 'sources' => $sources];
         }
     }
 
